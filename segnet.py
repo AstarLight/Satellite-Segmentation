@@ -1,4 +1,8 @@
 #coding=utf-8
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import argparse
 import numpy as np  
 from keras.models import Sequential  
 from keras.layers import Conv2D,MaxPooling2D,UpSampling2D,BatchNormalization,Reshape,Permute,Activation  
@@ -12,7 +16,7 @@ import cv2
 import random
 import os
 from tqdm import tqdm  
-os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 seed = 7  
 np.random.seed(seed)  
   
@@ -49,7 +53,7 @@ def creat_dataset(image_num = 900):
             g_count += 1
         
     
-  
+'''  
 #原keras中的load_img只读取两种格式，gray和RGB，其他类型的图像都会转为RBG进行读取，本处对此进行更改，保留原图格式  
 def load_img(path, grayscale=False, target_size=None):  
     img = Image.open(path)  
@@ -61,6 +65,16 @@ def load_img(path, grayscale=False, target_size=None):
         if img.size != wh_tuple:  
             img = img.resize(wh_tuple)  
     return img  
+'''
+
+def load_img(path, grayscale=False):
+    if grayscale:
+        img = cv2.imread(path,cv2.IMREAD_GRAYSCALE)
+    else:
+        img = cv2.imread(path)
+        img = np.array(img,dtype="float") / 255.0
+    return img
+
 
 '''    
 train_url = open(r'./train/train.txt','r').readlines()  
@@ -77,7 +91,7 @@ def get_train_val(val_rate = 0.25):
     train_url = []    
     train_set = []
     val_set  = []
-    for pic in os.listdir('./train/src'):
+    for pic in os.listdir(filepath + 'src'):
         train_url.append(pic)
     random.shuffle(train_url)
     total_num = len(train_url)
@@ -91,7 +105,7 @@ def get_train_val(val_rate = 0.25):
 
 # data for training  
 def generateData(batch_size,data=[]):  
-    print 'generateData...'
+    #print 'generateData...'
     while True:  
         train_data = []  
         train_label = []  
@@ -100,12 +114,14 @@ def generateData(batch_size,data=[]):
             url = data[i]
             batch += 1 
             #print (filepath + 'src/' + url)
-            img = load_img(filepath + 'src/' + url, target_size=(img_w, img_h))  
+            #img = load_img(filepath + 'src/' + url, target_size=(img_w, img_h))  
+            img = load_img(filepath + 'src/' + url)
             img = img_to_array(img) 
             # print img
             # print img.shape  
             train_data.append(img)  
-            label = load_img(filepath + 'label/' + url, target_size=(img_w, img_h),grayscale=True)  
+            #label = load_img(filepath + 'label/' + url, target_size=(img_w, img_h),grayscale=True)
+            label = load_img(filepath + 'label/' + url, grayscale=True)
             label = img_to_array(label).reshape((img_w * img_h,))  
             # print label.shape  
             train_label.append(label)  
@@ -123,7 +139,7 @@ def generateData(batch_size,data=[]):
  
 # data for validation 
 def generateValidData(batch_size,data=[]):  
-    print 'generateValidData...'
+    #print 'generateValidData...'
     while True:  
         valid_data = []  
         valid_label = []  
@@ -131,13 +147,15 @@ def generateValidData(batch_size,data=[]):
         for i in (range(len(data))):  
             url = data[i]
             batch += 1  
-            img = load_img(filepath + 'src/' + url, target_size=(img_w, img_h)) 
-            print img
+            #img = load_img(filepath + 'src/' + url, target_size=(img_w, img_h))
+            img = load_img(filepath + 'src/' + url)
+            #print img
             #print (filepath + 'src/' + url)
             img = img_to_array(img)  
             # print img.shape  
             valid_data.append(img)  
-            label = load_img(filepath + 'label/' + url, target_size=(img_w, img_h),grayscale=True)  
+            #label = load_img(filepath + 'label/' + url, target_size=(img_w, img_h),grayscale=True)
+            label = load_img(filepath + 'label/' + url, grayscale=True)
             label = img_to_array(label).reshape((img_w * img_h,))  
             # print label.shape  
             valid_label.append(label)  
@@ -238,17 +256,34 @@ def SegNet():
     return model  
   
   
-def train():  
+def train(args): 
+    EPOCHS = 30
+    BS = 16
     model = SegNet()  
-    modelcheck = ModelCheckpoint('Segnet_params_1.h5',monitor='val_acc',save_best_only=True,mode='max')  
+    modelcheck = ModelCheckpoint(args['model'],monitor='val_acc',save_best_only=True,mode='max')  
     callable = [modelcheck]  
     train_set,val_set = get_train_val()
     train_numb = len(train_set)  
     valid_numb = len(val_set)  
     print ("the number of train data is",train_numb)  
     print ("the number of val data is",valid_numb)
-    model.fit_generator(generator=generateData(16,train_set),steps_per_epoch=train_numb,epochs=10,verbose=1,  
-                    validation_data=generateValidData(16,val_set),validation_steps=valid_numb,callbacks=callable,max_q_size=1)  
+    H = model.fit_generator(generator=generateData(BS,train_set),steps_per_epoch=train_numb//BS,epochs=EPOCHS,verbose=1,  
+                    validation_data=generateValidData(BS,val_set),validation_steps=valid_numb//BS,callbacks=callable,max_q_size=1)  
+
+    # plot the training loss and accuracy
+    plt.style.use("ggplot")
+    plt.figure()
+    N = EPOCHS
+    plt.plot(np.arange(0, N), H.history["loss"], label="train_loss")
+    plt.plot(np.arange(0, N), H.history["val_loss"], label="val_loss")
+    plt.plot(np.arange(0, N), H.history["acc"], label="train_acc")
+    plt.plot(np.arange(0, N), H.history["val_acc"], label="val_acc")
+    plt.title("Training Loss and Accuracy on SegNet Satellite Seg")
+    plt.xlabel("Epoch #")
+    plt.ylabel("Loss/Accuracy")
+    plt.legend(loc="lower left")
+    plt.savefig(args["plot"])
+
   
 def predict():  
     model = SegNet()  
@@ -273,8 +308,24 @@ def predict():
         plt.imshow(pred) 
         plt.show() 
         '''  
-  
+def args_parse():
+    # construct the argument parse and parse the arguments
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-a", "--augment", help="using data augment or not",
+                    action="store_true", default=False)
+    ap.add_argument("-m", "--model", required=True,
+                    help="path to output model")
+    ap.add_argument("-p", "--plot", type=str, default="plot.png",
+                    help="path to output accuracy/loss plot")
+    args = vars(ap.parse_args()) 
+    return args
+
+
 if __name__=='__main__':  
     #creat_dataset()
-    #train()  
-    predict()  
+    args = args_parse()
+    if args['augment'] == True:
+        filepath ='./aug/train/'
+
+    train(args)  
+    #predict()  
