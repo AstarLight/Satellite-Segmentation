@@ -63,7 +63,7 @@ def data_augment(xb,yb):
         
     return xb,yb
 
-def creat_dataset(image_num = 60000, mode = 'original'):
+def creat_dataset(image_num = 100000, mode = 'original'):
     print('creating dataset...')
     image_each = image_num / len(image_sets)
     g_count = 0
@@ -83,9 +83,9 @@ def creat_dataset(image_num = 60000, mode = 'original'):
             visualize = np.zeros((256,256)).astype(np.uint8)
             visualize = label_roi *50
             
-            cv2.imwrite(('./train/visualize/%d.png' % g_count),visualize)
-            cv2.imwrite(('./train/src/%d.png' % g_count),src_roi)
-            cv2.imwrite(('./train/label/%d.png' % g_count),label_roi)
+            cv2.imwrite(('./aug/train/visualize/%d.png' % g_count),visualize)
+            cv2.imwrite(('./aug/train/src/%d.png' % g_count),src_roi)
+            cv2.imwrite(('./aug/train/label/%d.png' % g_count),label_roi)
             count += 1 
             g_count += 1
 
