@@ -37,9 +37,6 @@ def predict(args):
         path = TEST_SET[n]
         #load the image
         image = cv2.imread('./test/' + path)
-        # pre-process the image for classification
-        #image = image.astype("float") / 255.0
-        #image = img_to_array(image)
         h,w,_ = image.shape
         padding_h = (h//stride + 1) * stride 
         padding_w = (w//stride + 1) * stride

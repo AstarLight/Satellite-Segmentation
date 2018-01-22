@@ -35,27 +35,7 @@ labelencoder = LabelEncoder()
 labelencoder.fit(classes)  
 
 image_sets = ['1.png','2.png','3.png']
-
-def creat_dataset(image_num = 900):
-    print('creating dataset...')
-    image_each = image_num / len(image_sets)
-    g_count = 0
-    for i in range(len(image_sets)):
-        count = 0
-        src_img = cv2.imread('./data/src/' + image_sets[i])  # 3 channels
-        label_img = cv2.imread('./data/label/' + image_sets[i],cv2.IMREAD_GRAYSCALE)  # single channel
-        X_height,X_width,_ = src_img.shape
-        while count < image_each:
-            random_width = random.randint(0, X_width - img_w - 1)
-            random_height = random.randint(0, X_height - img_h - 1)
-            src_roi = src_img[random_height: random_height + img_h, random_width: random_width + img_w,:]
-            label_roi = label_img[random_height: random_height + img_h, random_width: random_width + img_w,:]
-            cv2.imwrite(('./train/src/%d.png',g_count),src_roi)
-            cv2.imwrite(('./train/label/%d.png',g_count),label_roi)
-            count += 1 
-            g_count += 1
-        
-    
+ 
 
 def load_img(path, grayscale=False):
     if grayscale:
@@ -94,27 +74,16 @@ def generateData(batch_size,data=[]):
         for i in (range(len(data))): 
             url = data[i]
             batch += 1 
-            #print (filepath + 'src/' + url)
-            #img = load_img(filepath + 'src/' + url, target_size=(img_w, img_h))  
             img = load_img(filepath + 'src/' + url)
-            img = img_to_array(img) 
-            # print img
-            #print img.shape  
+            img = img_to_array(img)  
             train_data.append(img)  
-            #label = load_img(filepath + 'label/' + url, target_size=(img_w, img_h),grayscale=True)
-            label = load_img(filepath + 'label/' + url, grayscale=True)
-            #label = img_to_array(label).reshape((img_w * img_h,))  
+            label = load_img(filepath + 'label/' + url, grayscale=True) 
             label = img_to_array(label)
-            #print label.shape  
             train_label.append(label)  
             if batch % batch_size==0: 
                 #print 'get enough bacth!\n'
                 train_data = np.array(train_data)  
                 train_label = np.array(train_label)  
-                #train_label = np.array(train_label).flatten()  
-                #train_label = labelencoder.transform(train_label)  
-                #train_label = to_categorical(train_label, num_classes=n_label)  
-                #train_label = train_label.reshape((batch_size,img_w * img_h,n_label))  
                 yield (train_data,train_label)  
                 train_data = []  
                 train_label = []  
@@ -130,115 +99,20 @@ def generateValidData(batch_size,data=[]):
         for i in (range(len(data))):  
             url = data[i]
             batch += 1  
-            #img = load_img(filepath + 'src/' + url, target_size=(img_w, img_h))
             img = load_img(filepath + 'src/' + url)
-            #print img
-            #print (filepath + 'src/' + url)
             img = img_to_array(img)  
-            # print img.shape  
             valid_data.append(img)  
-            #label = load_img(filepath + 'label/' + url, target_size=(img_w, img_h),grayscale=True)
             label = load_img(filepath + 'label/' + url, grayscale=True)
-            #label = img_to_array(label).reshape((img_w * img_h,))  
             label = img_to_array(label)
-            # print label.shape  
             valid_label.append(label)  
             if batch % batch_size==0:  
                 valid_data = np.array(valid_data)  
                 valid_label = np.array(valid_label)  
-                #valid_label = np.array(valid_label).flatten()  
-                #valid_label = labelencoder.transform(valid_label)  
-                #valid_label = to_categorical(valid_label, num_classes=n_label)  
-                #valid_label = valid_label.reshape((batch_size,img_w * img_h,n_label))  
                 yield (valid_data,valid_label)  
                 valid_data = []  
                 valid_label = []  
                 batch = 0  
   
-def SegNet():  
-    model = Sequential()  
-    #encoder  
-    model.add(Conv2D(64,(3,3),strides=(1,1),input_shape=(3,img_w,img_h),padding='same',activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(64,(3,3),strides=(1,1),padding='same',activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(MaxPooling2D(pool_size=(2,2)))  
-    #(128,128)  
-    model.add(Conv2D(128, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(128, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(MaxPooling2D(pool_size=(2, 2)))  
-    #(64,64)  
-    model.add(Conv2D(256, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(256, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(256, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(MaxPooling2D(pool_size=(2, 2)))  
-    #(32,32)  
-    model.add(Conv2D(512, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(512, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(512, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(MaxPooling2D(pool_size=(2, 2)))  
-    #(16,16)  
-    model.add(Conv2D(512, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(512, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(512, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(MaxPooling2D(pool_size=(2, 2)))  
-    #(8,8)  
-    #decoder  
-    model.add(UpSampling2D(size=(2,2)))  
-    #(16,16)  
-    model.add(Conv2D(512, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(512, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(512, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(UpSampling2D(size=(2, 2)))  
-    #(32,32)  
-    model.add(Conv2D(512, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(512, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(512, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(UpSampling2D(size=(2, 2)))  
-    #(64,64)  
-    model.add(Conv2D(256, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(256, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(256, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(UpSampling2D(size=(2, 2)))  
-    #(128,128)  
-    model.add(Conv2D(128, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(128, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(UpSampling2D(size=(2, 2)))  
-    #(256,256)  
-    model.add(Conv2D(64, (3, 3), strides=(1, 1), input_shape=(3,img_w, img_h), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(64, (3, 3), strides=(1, 1), padding='same', activation='relu'))  
-    model.add(BatchNormalization())  
-    model.add(Conv2D(n_label, (1, 1), strides=(1, 1), padding='same'))  
-    model.add(Reshape((n_label,img_w*img_h)))  
-    #axis=1和axis=2互换位置，等同于np.swapaxes(layer,1,2)  
-    model.add(Permute((2,1)))  
-    model.add(Activation('softmax'))  
-    model.compile(loss='categorical_crossentropy',optimizer='sgd',metrics=['accuracy'])  
-    model.summary()  
-    return model  
   
 def unet():
     inputs = Input((3, img_w, img_h))
@@ -332,7 +206,6 @@ def args_parse():
 
 
 if __name__=='__main__':  
-    #creat_dataset()
     args = args_parse()
     filepath = args['data']
     train(args)  
