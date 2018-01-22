@@ -20,4 +20,4 @@ This is a satellite remote sensing segmentation project wirtten by Keras based o
 
 ![](3.png) 
 
-![](3.png) 
+![](2.png) 
