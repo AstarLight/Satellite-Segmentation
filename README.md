@@ -15,8 +15,9 @@ This is a satellite remote sensing segmentation project wirtten by Keras based o
 5. RefineNet
 6. post-processing: CRF
 
-
-![](1.png) 
+<div align="center">
+<img src="./1.png" height="300px" alt="图片说明" >
+</div>
 
 
 <div align="center">
