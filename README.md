@@ -13,3 +13,4 @@ This is a satellite remote sensing segmentation project wirtten by Keras based o
 3. Mask RCNN
 4. FCN
 5. RefineNet
+6. post=processing: CRF
