@@ -18,6 +18,8 @@ This is a satellite remote sensing segmentation project wirtten by Keras based o
 
 ![](1.png) 
 
-![](3.png) 
 
-![](2.png) 
+<div align="center">
+<img src="./3.png" height="500px" width="300px" alt="图片说明" >
+<img src="./2.png" height="500px" width="300px" alt="图片说明" >
+</div>
