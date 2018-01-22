@@ -24,3 +24,12 @@ This is a satellite remote sensing segmentation project wirtten by Keras based o
 <img src="./3.png" height="500px" width="300px" alt="图片说明" >
 <img src="./2.png" height="500px" width="300px" alt="图片说明" >
 </div>
+
+
+
+dataset download：
+
+链接：https://pan.baidu.com/s/1i6oMukH 密码：yqj2
+
+
+Please visit my blog for more details: http://www.cnblogs.com/skyfsm/p/8330882.html
