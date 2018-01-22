@@ -2,7 +2,7 @@
 
 This is a satellite remote sensing segmentation project wirtten by Keras based on SegNet and U-Net.
 
-## mian ideas
+## main ideas
 1. segmented by SegNet
 2. segmented by U-Net
 3. model emsamble: SegNet + U-Net
