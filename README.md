@@ -32,6 +32,16 @@ This is a satellite remote sensing segmentation project wirtten by Keras based o
 我上传了我预处理后的数据集，一份是专门给segnet训练，一份是给unet训练的(只上传了buildings的数据集)，所以如果不想自己处理原始数据的话，可以下载我的预处理后的数据跑跑效果看看。建议先跑SegNet效果再跑Unet效果。
 
 预处理后的数据集：
+```
+链接：https://pan.baidu.com/s/1FwHkvp2esvhyOx1eSZfkog 密码：fqnw
+```
+
+下载之后可以看到里面有三个文件夹，分别是用于测试的图片，用于unet训练的图片（里面是src和label文件夹），用于segnet的图片(里面是src和label文件夹)。对于segnet训练集我已经切割好了，但是unet的还没切割，所以需要执行该文件生成unet训练集：
+```
+python ./unet/gen_dataset.py
+```
+在执行之前需要先在该文件里面图片读取路径修改为我上传的unet训练集路径，输出路径也要修改一下。
+
 
 ### 怎么跑SegNet？
 可以先在segnet_train.py里修改filepath ，改成segnet训练集的路径，然后
@@ -62,7 +72,7 @@ python unet_predict.py
 1. 有朋友反映原始数据集里的训练集有些图片全黑，这是因为这些图片是十六位的！比赛方就是这么折腾人，所以一般图片浏览器无法显示这些16位图，解决方法：
 深度16位的图片转8位：matlab下：im2 = uint8(im1);
 
-2. label怎么都是黑色的啊？因为没类的标签的值都是1到5啊，像素1~5当然是黑色啊！想看看标签长什么样的解决方法：参考介个文件：
+2. label怎么都是黑色的啊？因为每类的标签的值都是1到5啊，像素1~5当然是黑色啊！想看看标签长什么样的解决方法：参考介个文件：
 ```
 https://github.com/AstarLight/Satellite-Segmentation/blob/master/draw_lables.cpp
 ```
